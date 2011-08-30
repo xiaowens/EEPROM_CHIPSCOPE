@@ -1,0 +1,48 @@
+# input
+NET "bclk_50MHz" 				LOC ="E12";
+#NET "switcher(0)" 		LOC = "V8";
+#NET "switcher(1)" 		LOC = "U10";
+#NET "switcher(2)" 		LOC = "U8";
+#NET "switcher(3)" 		LOC = "T9";
+#NET "btn_show_index"			LOC = "T15"		| IOSTANDARD = LVCMOS33 | PULLDOWN;
+#NET "btn_show_1st_byte" 		LOC = "T14" 	| IOSTANDARD = LVCMOS33 | PULLDOWN;
+#NET "btn_show_2nd_byte"			LOC = "T15"		| IOSTANDARD = LVCMOS33 | PULLDOWN;
+#NET "btn_show_master" 		LOC = "U15" 	| IOSTANDARD = LVCMOS33 | PULLDOWN;
+#NET "btn_show_slave"			LOC = "T16"		| IOSTANDARD = LVCMOS33 | PULLDOWN;
+#NET "btn_write_now"			LOC = "R13" 	| IOSTANDARD = LVCMOS33 | PULLDOWN;
+net "SCL"						loc = "AB3";
+#net "SCL"	pullup;
+net "SDA"						loc = "AA6";
+net "SDA"  pullup;
+net "WP_PIN"						loc = "AA4";
+NET "VCC_PIN"					LOC = "AB6";
+#NET "led"					loc = "R20";
+# output
+#NET "led(0)" LOC = "R20";
+#NET "led(1)" LOC = "T19";
+#NET "led(2)" LOC = "U20";
+#NET "led(3)" LOC = "U19";
+#NET "led(4)" LOC = "v19";
+#NET "led(5)" LOC = "v20";
+#NET "led(6)" LOC = "y22";
+#NET "led(7)" LOC = "w21";
+# monitor ouput
+NET "mon(0)" LOC = "A4";		#CLK
+NET "mon(1)" LOC = "B4";		#SCL
+NET "mon(2)" LOC = "B6";		#SDA
+#NET "mon(3)" LOC = "A5";
+#NET "mon(4)" LOC = "A7";
+#
+#NET "mon(5)" LOC = "A6";
+#NET "mon(6)" LOC = "A9";
+#NET "mon(7)" LOC = "A8";
+#NET "mon(8)" LOC = "A10";
+#NET "mon(9)" LOC = "C10";
+#
+#NET "mon(10)" LOC = "A12";
+#NET "mon(11)" LOC = "A11";
+#NET "mon(12)" LOC = "AB2";
+#NET "mon(13)" LOC = "AA3";
+#NET "mon(14)" LOC = "AB3";
+#NET "mon(15)" LOC = "AA4";
+
