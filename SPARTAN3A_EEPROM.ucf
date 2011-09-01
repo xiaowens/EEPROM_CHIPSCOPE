@@ -27,9 +27,9 @@ NET "VCC_PIN"					LOC = "AB6";
 #NET "led(6)" LOC = "y22";
 #NET "led(7)" LOC = "w21";
 # monitor ouput
-NET "mon(0)" LOC = "A4";		#CLK
-NET "mon(1)" LOC = "B4";		#SCL
-NET "mon(2)" LOC = "B6";		#SDA
+#NET "mon(0)" LOC = "A4";		#CLK
+#NET "mon(1)" LOC = "B4";		#SCL
+#NET "mon(2)" LOC = "B6";		#SDA
 #NET "mon(3)" LOC = "A5";
 #NET "mon(4)" LOC = "A7";
 #
