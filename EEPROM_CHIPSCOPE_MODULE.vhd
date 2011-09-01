@@ -112,7 +112,7 @@ architecture Behavioral of EEPROM_CHIPSCOPE_MODULE is
 	signal DATA_IN_BYTE_EEPROM				: STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 	---------------------------------------------------------------------------
-	SIGNAL CLK_COUNTER					: UNSIGNED(9 DOWNTO 0) := x"00"&"00";
+	SIGNAL CLK_COUNTER					: UNSIGNED(8 DOWNTO 0) := x"00"&"0";
 	
 	SIGNAL SCL_INTERNAL	: STD_LOGIC;
 	SIGNAL SDA_INTERNAL	: STD_LOGIC;
@@ -133,7 +133,7 @@ begin
 	---------------------------------------------------------	
 	eeprom		: EEPROM_I2C_INTERFACE
 	port map (
-		CLK			=> CLK_COUNTER(9),
+		CLK			=> CLK_COUNTER(8),
 		ADDRESS		=> ADDRESS_EEPROM,
 		COMMAND		=> COMMAND_EEPROM,
 		NUM_OF_BYTES		=>	NUM_OF_BYTES_EEPROM,
@@ -178,7 +178,7 @@ begin
 	END PROCESS reduce_requency;
 	--=========================================================================
 
-	process (CLK_COUNTER(9))
+	process (CLK_COUNTER(8))
 		--======================================================================
 		-----------COMMAND FOR EEPROM_I2C_INTERFACE MODULE----------------
 		CONSTANT CMD_CHECK_COMMAND			: STD_LOGIC_VECTOR(2 DOWNTO 0) := "000";
@@ -206,7 +206,7 @@ begin
 --	variable wait_counter							: integer range 0 to 127 := 0;
 		--======================================================================
 	BEGIN
-		IF RISING_EDGE(CLK_COUNTER(9)) THEN
+		IF RISING_EDGE(CLK_COUNTER(8)) THEN
 			
 			
 			--#############################
@@ -288,14 +288,13 @@ begin
 						INTERNAL_CHIPSCOPE_VIO_OUT(142) = '1' then	--when 'Write' signal from Chipscope is 'on'
 					
 				
---				for i in 0 to STRING_SIZE-1 loop
---					bytes_to_write(i) := internal_CHIPSCOPE_VIO_OUT(7+8*i downto 0+8*i);
---				end loop;
+				for i in 0 to STRING_SIZE-1 loop
+					bytes_to_write(i) := internal_CHIPSCOPE_VIO_OUT(7+8*i downto 0+8*i);
+				end loop;
 				
 					
 				if counter = 0 then
-					
-					
+
 					if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
 						COMMAND_EEPROM <= CMD_RESET_BYTES_SAVED;	--clear bytes saved
 						EXECUTE_EEPROM <= '1';
@@ -323,31 +322,65 @@ begin
 						end if;
 					else	--all bytes are sent to EEPROM_I2C_INTERFACE module
 						bytes_to_write_counter := 0;
-						counter := counter + 1;
+						--counter := counter + 1;
+						counter := 5;
 					end if;
 
-				elsif counter = 3 then
-					if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
-						ADDRESS_EEPROM <= INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128);
-						COMMAND_EEPROM <= CMD_SET_ADDRESS;
-						EXECUTE_EEPROM <= '1';
-						counter := counter + 1;
-					end if; 
-				elsif counter = 4 then
-					if COMMAND_RUNNING_EEPROM = CMD_SET_ADDRESS then
-						for i in 0 to STRING_SIZE-1 loop
-								bytes_to_write(i) := internal_CHIPSCOPE_VIO_OUT(7+8*i downto 0+8*i);
-						end loop;
-						
-						for i in 0 to STRING_SIZE-1 loop
-								INTERNAL_CHIPSCOPE_VIO_IN(7+8*i downto 0+8*i) <= bytes_to_write(i);
-						end loop;
-						counter := counter + 1;
-					end if;
+--				elsif counter = 3 then
+--					if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
+--						ADDRESS_EEPROM <= INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128);
+--						COMMAND_EEPROM <= CMD_SET_ADDRESS;
+--						EXECUTE_EEPROM <= '1';
+--						counter := counter + 1;
+--					end if; 
+--				elsif counter = 4 then
+--					if COMMAND_RUNNING_EEPROM = CMD_SET_ADDRESS then
+	
+					
+--						for i in 0 to STRING_SIZE-1 loop
+--								INTERNAL_CHIPSCOPE_VIO_IN(7+8*i downto 0+8*i) <= bytes_to_write(i);
+--						end loop;
+--						counter := counter + 1;
+--					end if;
+--				--************************testing**********************************
+--				elsif counter = 5 then
+--					if bytes_after_read_counter < STRING_SIZE then
+--						if sub_step_counter = 0  then
+--							if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
+--								NUM_OF_BYTES_EEPROM <= std_logic_vector(to_unsigned(bytes_after_read_counter, 6));
+--								COMMAND_EEPROM <= CMD_TRANSFER_READ_OUT;
+--								EXECUTE_EEPROM <= '1';
+--								sub_step_counter := sub_step_counter + 1;
+--							end if;
+--						elsif sub_step_counter = 1 then
+--							if COMMAND_RUNNING_EEPROM = CMD_TRANSFER_READ_OUT then
+--								sub_step_counter := sub_step_counter + 1;
+--							end if;
+--						
+--						else
+--							if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then
+--								bytes_after_read(bytes_after_read_counter) := DATA_OUT_BYTE_EEPROM;
+--								bytes_after_read_counter := bytes_after_read_counter + 1;
+--								sub_step_counter := 0;
+--							end if;
+--						end if;
+--					else --after all bytes are transfered out
+--						bytes_after_read_counter := 0;
+--						counter := counter + 1;
+--					end if;
+--				else	--show the read-out on Chipscope
+--					for i in 0 to STRING_SIZE-1 loop
+--						INTERNAL_CHIPSCOPE_VIO_IN(7+8*i downto 0+8*i) <= bytes_after_read(i);
+--					end loop;
+--					internal_CHIPSCOPE_VIO_IN(128) <= '1';
+--				end if;
+--				--****************************************************************
+--				
+				
 				
 				elsif counter = 5 then
 					if COMMAND_RUNNING_EEPROM = CMD_CHECK_COMMAND then		
-						--ADDRESS_EEPROM <= INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128);
+						ADDRESS_EEPROM <= INTERNAL_CHIPSCOPE_VIO_OUT(140 downto 128);
 						COMMAND_EEPROM <= CMD_WRITE_TO_EEPROM_BYTES;	--WRITE DATA TO EEPROM
 						EXECUTE_EEPROM <= '1';
 						counter := counter + 1;
@@ -377,7 +410,7 @@ begin
 		
 	END PROCESS;
 
-	mon(0) <= CLK_COUNTER(9);
+	mon(0) <= CLK_COUNTER(8);
 	mon(1) <= SCL_EEPROM;
 	mon(2) <= SDA_EEPROM;
 	

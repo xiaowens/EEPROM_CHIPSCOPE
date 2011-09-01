@@ -110,7 +110,7 @@ architecture Behavioral of EEPROM_I2C_INTERFACE is
 			write_bytes,
 			write_stop
 		);
-	signal state_write, state_write_next	: WRITE_TO_EEPROM_STATE_TYPE := write_bytes; --was send_control_byte;
+	signal state_write, state_write_next	: WRITE_TO_EEPROM_STATE_TYPE := send_control_byte;
 	
 	
 ----------------SUB-STATE TYPE FOR "st_set_address" in the main state---------
@@ -193,6 +193,7 @@ begin
 		--set 'wait_counter'(need to be smaller than the 'wait_counter' in I2C_Module) 
 		--to wait certain cycles before resending the control byte when not receiving any 'ACK' from slave.
 		variable wait_counter 			: integer range 0 to 127 := 0;	
+		
 	--=============================================================================
 		--==============================================================================
 	BEGIN
@@ -282,12 +283,15 @@ begin
 							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then 
 								step_counter := 0;
 								state_set_address <= state_set_address_next;
+								wait_counter := 0;
 							elsif COMMAND_RUNNING_I2C = CMD_WAIT_FOR_ACK then	--need to wait for EEPROM finishing the internal cycle sometimes!
-								wait_counter := wait_counter + 1;
+								
 								if wait_counter > 100 then
 									step_counter := 0;
 									wait_counter := 0;
 									state_set_address <= send_control_byte;
+								else
+									wait_counter := wait_counter + 1;
 								end if;
 							end if;
 							 
@@ -460,6 +464,7 @@ begin
 					
 					if (step_counter = 0) then
 						bytes_to_write(bytes_to_write_counter) <= DATA_IN_BYTE;
+						--bytes_read_out(bytes_to_write_counter) <= DATA_IN_BYTE;	--testing if data are saved correctly
 						bytes_to_write_counter <= bytes_to_write_counter + 1;
 						step_counter := step_counter + 1;
 					else
@@ -471,29 +476,29 @@ begin
 				-----------------------------------------------------------------------------------------
 				when st_write_to_EEPROM_bytes =>
 					COMMAND_RUNNING <= CMD_WRITE_TO_EEPROM_BYTES;
-					--EEPROM_address(15 downto 0) :=  "000" & ADDRESS(12 downto 0);
+					EEPROM_address(15 downto 0) :=  "000" & ADDRESS(12 downto 0);
 					--=======================CASE STATE_WRITE BEGIN======================
 					case  state_write is
 					-----------------------------------------------------------
---					when send_control_byte =>
---						if step_counter = 0 then
---							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then
---								COMMAND_I2C <= CMD_START;	--send a 'START' signal to EEPROM
---								EXECUTE_I2C <= '1';
---								step_counter := step_counter + 1;
---							end if;
---						elsif step_counter = 1 then
---							if COMMAND_RUNNING_I2C = CMD_START then
---								step_counter := step_counter + 1;
---							end if;
---						elsif step_counter = 2 then
---							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then
---								data_in_i2c_temp := "10100000";	--send the control byte.
---								state_write <= write_eeprom_and_ack;
---								state_write_next <= write_address;
---								step_counter := 0;
---							end if;
---						end if;
+					when send_control_byte =>
+						if step_counter = 0 then
+							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then
+								COMMAND_I2C <= CMD_START;	--send a 'START' signal to EEPROM
+								EXECUTE_I2C <= '1';
+								step_counter := step_counter + 1;
+							end if;
+						elsif step_counter = 1 then
+							if COMMAND_RUNNING_I2C = CMD_START then
+								step_counter := step_counter + 1;
+							end if;
+						elsif step_counter = 2 then
+							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then
+								data_in_i2c_temp := "10100000";	--send the control byte.
+								state_write <= write_eeprom_and_ack;
+								state_write_next <= write_address;
+								step_counter := 0;
+							end if;
+						end if;
 					-----------------------------------------------------------	
 					when write_eeprom_and_ack =>
 						if step_counter = 0 then
@@ -521,29 +526,32 @@ begin
 							if COMMAND_RUNNING_I2C = CMD_CHECK_COMMAND then 
 								step_counter := 0;
 								state_write <= state_write_next;
+								wait_counter := 0;
 							elsif COMMAND_RUNNING_I2C = CMD_WAIT_FOR_ACK then	--need to wait for EEPROM finishing the internal cycle sometimes! Especially when trying to write more data right after the last write.
-								wait_counter := wait_counter + 1;
+								
 								if wait_counter > 100 then
 									step_counter := 0;
 									wait_counter := 0;
 									state_write <= send_control_byte;
+								else
+									wait_counter := wait_counter + 1;
 								end if;
 							end if;
 							 
 						end if;
 					-----------------------------------------------------------	
---					when write_address =>
---						if address_byte_counter = 0 then		--higher byte
---							data_in_i2c_temp := std_logic_vector(EEPROM_address(15 DOWNTO 8));
---							state_write_next <= write_address;
---							state_write <= write_eeprom_and_ack;
---							address_byte_counter := address_byte_counter + 1;
---						elsif address_byte_counter = 1 then		--lower byte
---							data_in_i2c_temp := std_logic_vector(EEPROM_address(7 DOWNTO 0));
---							state_write <= write_eeprom_and_ack;
---							state_write_next <= write_bytes;
---							address_byte_counter := 0;
---						end if;
+					when write_address =>
+						if address_byte_counter = 0 then		--higher byte
+							data_in_i2c_temp := std_logic_vector(EEPROM_address(15 DOWNTO 8));
+							state_write_next <= write_address;
+							state_write <= write_eeprom_and_ack;
+							address_byte_counter := address_byte_counter + 1;
+						elsif address_byte_counter = 1 then		--lower byte
+							data_in_i2c_temp := std_logic_vector(EEPROM_address(7 DOWNTO 0));
+							state_write <= write_eeprom_and_ack;
+							state_write_next <= write_bytes;
+							address_byte_counter := 0;
+						end if;
 					-----------------------------------------------------------	
 					when write_bytes =>
 							if byte_index_counter < bytes_to_write_counter then	--repeat to write all bytes to EEPROM. Size varies.
@@ -577,8 +585,8 @@ begin
 							if EXECUTE = '0' then
 								state <= st_check_state;		--jump out of the 'case state_write', back to 'case state'.
 								step_counter := 0;
-								state_write <= write_bytes;
-								--state_write <= send_control_byte;	--reset the state_write, not sure if it works. it works.
+								--state_write <= write_bytes;
+								state_write <= send_control_byte;	--reset the state_write, not sure if it works. it works.
 							end if;
 						end if;
 					-----------------------------------------------------------	
