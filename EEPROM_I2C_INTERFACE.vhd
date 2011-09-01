@@ -8,7 +8,7 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
--- Description: 
+-- Description: Save data from other sources. Using I2C_Module to page read and write data to EEPROM. Transfer the readout data to other Modules.
 --
 -- Dependencies: 
 --
@@ -31,7 +31,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity EEPROM_I2C_INTERFACE is
 	generic(
-		CONSTANT PAGE_SIZE			: integer := 32
+		CONSTANT PAGE_SIZE			: integer := 32		--Max. page size for EEPROM.
 		);
 	port(
 		CLK		: IN	STD_LOGIC;
@@ -132,7 +132,6 @@ architecture Behavioral of EEPROM_I2C_INTERFACE is
 	signal bytes_read_out					: bytes_read_out_type;
 	signal bytes_read_out_counter			: integer range 0 to PAGE_SIZE := 0;
 
-	--signal EEPROM_address		: unsigned(15 downto 0) := x"0000"; --2 bytes address 
 	signal byte_index_counter			: integer := 0;	--use to count while writing bytes to EEPROM
 
 	SIGNAL COMMAND_I2C			: STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -157,7 +156,6 @@ begin
 			);
 ------------------------------------------------------
 	PROCESS (CLK)
-	
 		--=============================================================================
 		------------COMMANDS FOR I2C MODULE USED HERE--------------------
 		CONSTANT CMD_CHECK_COMMAND			: STD_LOGIC_VECTOR(2 DOWNTO 0) := "000";		
@@ -464,7 +462,6 @@ begin
 					
 					if (step_counter = 0) then
 						bytes_to_write(bytes_to_write_counter) <= DATA_IN_BYTE;
-						--bytes_read_out(bytes_to_write_counter) <= DATA_IN_BYTE;	--testing if data are saved correctly
 						bytes_to_write_counter <= bytes_to_write_counter + 1;
 						step_counter := step_counter + 1;
 					else
@@ -585,7 +582,6 @@ begin
 							if EXECUTE = '0' then
 								state <= st_check_state;		--jump out of the 'case state_write', back to 'case state'.
 								step_counter := 0;
-								--state_write <= write_bytes;
 								state_write <= send_control_byte;	--reset the state_write, not sure if it works. it works.
 							end if;
 						end if;

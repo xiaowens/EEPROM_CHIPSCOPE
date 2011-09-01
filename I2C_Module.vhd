@@ -8,7 +8,7 @@
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
--- Description: 
+-- Description: Doing all the basic byte writing and reading. Sending ACK, START, STOP signals. 
 --
 -- Dependencies: 
 --
@@ -139,22 +139,7 @@ begin
 						state <= st_check_state;
 					END CASE;
 					-------------END CASE COMMAND-----------
---				--doesn't work!!
---				else --If there are multiple masters, release the bus when not using it.(not sure if it works)
---					if (wait_counter >= 20) then
---						if (step_counter = 0) then
---							SCL <= '0';
---							step_counter := step_counter + 1;
---						elsif (step_counter = 1) then
---							--SDA <= '0';
---							SDA <= 'Z';
---							--step_counter := step_counter + 1;
---						else
---						end if;
---					else
---						wait_counter := wait_counter + 1;
---					end if;
-					
+				
 				end if;	
 			-------------------------------------------------------------	
 			WHEN st_start =>
